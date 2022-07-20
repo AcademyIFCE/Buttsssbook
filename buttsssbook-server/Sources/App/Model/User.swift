@@ -9,12 +9,12 @@ import Vapor
 import Fluent
 
 final class User: Model {
-
+    
     static let schema = "users"
-
+    
     @ID(key: .id)
     var id: UUID?
-
+    
     @Field(key: "name")
     var name: String
     
@@ -45,7 +45,7 @@ final class User: Model {
 extension User: Content { }
 
 extension User {
-        
+    
     struct Input: Content {
         var name: String
         var email: String

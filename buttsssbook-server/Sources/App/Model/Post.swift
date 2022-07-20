@@ -7,19 +7,20 @@
 
 import Vapor
 import Fluent
+import Foundation
 
 final class Post: Model {
     
     static let schema = "posts"
-
+    
     @ID(key: .id)
     var id: UUID?
-
+    
     @Field(key: "content")
     var content: String
     
     @Field(key: "image")
-    var image: String?
+    var media: String?
     
     @Parent(key: "user_id")
     var user: User
@@ -27,22 +28,25 @@ final class Post: Model {
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
     
+    @Timestamp(key: "updated_at", on: .update)
+    var updatedAt: Date?
+    
     init() {}
     
-    init(content: String, image: String?, userID: User.IDValue) {
+    init(content: String, media: String? = nil, userID: User.IDValue) {
         self.content = content
-        self.image = image
+        self.media = media
         self.$user.id = userID
     }
     
-    init(_ input: Post.Input, userID: User.IDValue) {
-        self.content = input.content
-        self.image = input.image
+    init(form: Form, userID: User.IDValue) {
+        self.content = form.content
+        self.media = try? form.media?.data.write(to: URL(fileURLWithPath: DirectoryConfiguration.detect().publicDirectory))
         self.$user.id = userID
     }
     
-    func `public`() throws -> Output {
-        Output(id: try self.requireID(), content: self.content, image: self.image, createdAt: self.createdAt, user: self.user.public)
+    var `public`: Output1 {
+        Output1(id: id!, content: content, media: media, createdAt: createdAt, updatedAt: updatedAt, userID: $user.id)
     }
     
 }
@@ -51,21 +55,26 @@ extension Post: Content { }
 
 extension Post {
     
-    struct Input: Content {
-        var content: String
-        var image: String?
-    }
-    
     struct Form: Content {
         var content: String
-        var image: File?
+        var media: File?
     }
     
-    struct Output: Content {
+    struct Output1: Content {
+        var id: UUID
+        var content: String
+        var media: String?
+        var createdAt: Date?
+        var updatedAt: Date?
+        var userID: UUID
+    }
+    
+    struct Output2: Content {
         var id: UUID
         var content: String
         var image: String?
         var createdAt: Date?
+        var userID: UUID
         var user: User.Output
     }
     

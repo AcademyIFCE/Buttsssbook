@@ -8,10 +8,30 @@
 import Vapor
 import Fluent
 
-struct CreateUser: Migration {
+//struct CreateUser: Migration {
+//
+//    func prepare(on database: Database) -> EventLoopFuture<Void> {
+//        database
+//            .schema(User.schema)
+//            .id()
+//            .field("name", .string)
+//            .field("email", .string)
+//            .field("avatar", .string)
+//            .unique(on: "email")
+//            .field("password", .string)
+//            .create()
+//    }
+//
+//    func revert(on database: Database) -> EventLoopFuture<Void> {
+//        database.schema(User.schema).delete()
+//    }
+//
+//}
+
+struct CreateUser: AsyncMigration {
     
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database
+    func prepare(on database: Database) async throws {
+        try await database
             .schema(User.schema)
             .id()
             .field("name", .string)
@@ -21,8 +41,9 @@ struct CreateUser: Migration {
             .field("password", .string)
             .create()
     }
-
-    func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema(User.schema).delete()
+    
+    func revert(on database: Database) async throws {
+        try await database.schema(User.schema).delete()
     }
+    
 }

@@ -18,23 +18,21 @@ class ChatController: RouteCollection {
     }
     
     func onUpgrade(request: Request, socket: WebSocket) {
-        guard let user = try? request.auth.require(User.self) else {
-            socket.close(promise: nil)
-            return
-        }
-        
-        let connection = Connection(user: user.public, socket: socket)
-        
-        connections.insert(connection)
-        
-        socket.onText { (ws, text) in
-            do {
-                try self.dispatch(text, from: connection)
-            } catch {
-                print(error)
+        do {
+            let user = try request.auth.require(User.self)
+            let connection = Connection(user: user.public, socket: socket)
+            connections.insert(connection)
+            socket.onText { (ws, text) in
+                do {
+                    try self.dispatch(text, from: connection)
+                } catch {
+                    print(error)
+                }
             }
+        } catch {
+            print(error)
+            socket.close(promise: nil)
         }
-        
     }
     
     func dispatch(_ text: String, from connection: Connection) throws {

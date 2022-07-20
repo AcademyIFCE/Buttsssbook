@@ -8,11 +8,11 @@
 import Vapor
 
 final class Connection: Hashable {
-
+    
     let id: UUID
     let user: User.Output
     let socket: WebSocket
-
+    
     init(id: UUID = .init(), user: User.Output, socket: WebSocket) {
         self.id = id
         self.user = user
@@ -26,5 +26,5 @@ final class Connection: Hashable {
     static func == (lhs: Connection, rhs: Connection) -> Bool {
         lhs.id == rhs.id
     }
-
+    
 }

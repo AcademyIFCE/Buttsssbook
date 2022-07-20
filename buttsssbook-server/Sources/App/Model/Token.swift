@@ -9,12 +9,12 @@ import Vapor
 import Fluent
 
 enum SessionSource: Int, Content {
-  case signup
-  case login
+    case signup
+    case login
 }
 
 final class Token: Model {
-
+    
     static let schema = "tokens"
     
     @ID(key: "id")
