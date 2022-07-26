@@ -1,17 +1,5 @@
-//
-//  UserController.swift
-//  App
-//
-//  Created by Mateus Rodrigues on 03/05/20.
-//
-
 import Vapor
 import Fluent
-
-struct Session: Content {
-    let token: String
-    let user: User
-}
 
 struct UserController: RouteCollection {
     
@@ -28,12 +16,11 @@ struct UserController: RouteCollection {
         routes.group("users") {
             $0.get(use: index)
             $0.get(":id", use: show)
-//            $0.get(":id", "posts", use: posts)
             $0.post(use: create)
             $0.group(Token.authenticator()) {
                 $0.get("me", use: current)
-                $0.post("logout", use: logout)
                 $0.put("avatar", use: avatar)
+                $0.post("logout", use: logout)
             }
             $0.grouped(User.authenticator()).post("login", use: login)
         }
@@ -41,9 +28,9 @@ struct UserController: RouteCollection {
     
     func create(req: Request) async throws -> Session {
         let input = try req.content.decode(User.Input.self)
-        let user = try User.create(from: input)
+        let user = try User(input)
         try await user.save(on: req.db)
-        let token = try user.createToken(source: .signup)
+        let token = try user.token(source: .signup)
         try await token.save(on: req.db)
         let session = Session(token: token.value, user: user)
         return session
@@ -51,7 +38,7 @@ struct UserController: RouteCollection {
     
     func login(req: Request) async throws -> Session {
         let user = try req.auth.require(User.self)
-        let token = try user.createToken(source: .login)
+        let token = try user.token(source: .login)
         try await token.save(on: req.db)
         let session = Session(token: token.value, user: user)
         return session
@@ -75,7 +62,7 @@ struct UserController: RouteCollection {
         guard let data = req.body.data else {
             throw Abort(.badRequest)
         }
-        let avatar = try data.write(to: URL(fileURLWithPath: DirectoryConfiguration.detect().publicDirectory))
+        let avatar = try data.write(to: URL(fileURLWithPath: DirectoryConfiguration.detect().publicDirectory), contentType: req.headers.contentType)
         user.avatar = avatar
         try await user.save(on: req.db)
         return user.public
@@ -99,14 +86,6 @@ struct UserController: RouteCollection {
         } else {
             throw Abort(.notFound)
         }
-    }
-    
-    func posts(req: Request) async throws -> [Post.Output1] {
-        guard let id = req.parameters.get("id", as: User.IDValue.self) else {
-            throw Abort(.badRequest)
-        }
-        let posts = try await Post.query(on: req.db).filter(\.$user.$id == id).all()
-        return posts.map(\.public)
     }
     
 }

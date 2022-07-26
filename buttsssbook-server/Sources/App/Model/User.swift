@@ -1,10 +1,3 @@
-//
-//  User.swift
-//  App
-//
-//  Created by Mateus Rodrigues on 03/05/20.
-//
-
 import Vapor
 import Fluent
 
@@ -60,8 +53,8 @@ extension User {
         var email: String
     }
     
-    static func create(from input: Input) throws -> User {
-        User(name: input.name, email: input.email, avatar: input.avatar, password: try Bcrypt.hash(input.password))
+    convenience init(_ input: Input) throws {
+        self.init(name: input.name, email: input.email, avatar: input.avatar, password: try Bcrypt.hash(input.password))
     }
     
     var `public`: Output {
@@ -72,7 +65,7 @@ extension User {
 
 extension User {
     
-    func createToken(source: SessionSource) throws -> Token {
+    func token(source: SessionSource) throws -> Token {
         let token = [UInt8].random(count: 16).base64
         let calendar = Calendar(identifier: .gregorian)
         let expiryDate = calendar.date(byAdding: .year, value: 1, to: Date())
