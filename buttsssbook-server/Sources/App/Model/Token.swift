@@ -1,10 +1,3 @@
-//
-//  Token.swift
-//  App
-//
-//  Created by Mateus Rodrigues on 13/05/20.
-//
-
 import Vapor
 import Fluent
 

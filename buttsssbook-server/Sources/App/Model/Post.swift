@@ -1,13 +1,5 @@
-//
-//  Post.swift
-//  App
-//
-//  Created by Mateus Rodrigues on 03/05/20.
-//
-
 import Vapor
 import Fluent
-import Foundation
 
 final class Post: Model {
     
@@ -41,7 +33,9 @@ final class Post: Model {
     
     init(form: Form, userID: User.IDValue) {
         self.content = form.content
-        self.media = try? form.media?.data.write(to: URL(fileURLWithPath: DirectoryConfiguration.detect().publicDirectory))
+        if let media = form.media {
+            self.media = try? media.data.write(to: URL(fileURLWithPath: DirectoryConfiguration.detect().publicDirectory), contentType: media.contentType)
+        }
         self.$user.id = userID
     }
     

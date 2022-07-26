@@ -1,10 +1,3 @@
-//
-//  Connection.swift
-//  App
-//
-//  Created by Mateus Rodrigues on 21/05/20.
-//
-
 import Vapor
 
 final class Connection: Hashable {

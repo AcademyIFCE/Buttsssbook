@@ -1,10 +1,3 @@
-//
-//  PostController.swift
-//  App
-//
-//  Created by Mateus Rodrigues on 03/05/20.
-//
-
 import Vapor
 import Fluent
 
@@ -18,6 +11,7 @@ struct PostController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.group("posts") {
             $0.get(use: index)
+            $0.get(":id", use: show)
             $0.group(Token.authenticator()) {
                 $0.post(use: create)
                 $0.patch(":id", use: update)
@@ -34,13 +28,17 @@ struct PostController: RouteCollection {
             let allPosts = try await Post.query(on: req.db).sort(\.$createdAt, .descending).all()
             return allPosts.map(\.public)
         }
-//        if req.query["expand"] == "user_id" {
-//            let allPosts = try await Post.query(on: req.db).with(\.$user).sort(\.$createdAt, .descending).all().map{ try $0.public2() }
-//            return try await allPosts.encodeResponse(for: req)
-//        } else {
-//            let allPosts = try await Post.query(on: req.db).sort(\.$createdAt, .descending).all().map{ try $0.public1() }
-//            return try await allPosts.encodeResponse(for: req)
-//        }
+    }
+    
+    func show(req: Request) async throws -> Post.Output1 {
+        guard let id = req.parameters.get("id", as: Post.IDValue.self) else {
+            throw Abort(.badRequest)
+        }
+        if let post = try await Post.find(id, on: req.db) {
+            return post.public
+        } else {
+            throw Abort(.notFound)
+        }
     }
     
     func create(req: Request) async throws -> Post.Output1 {
@@ -88,25 +86,5 @@ struct PostController: RouteCollection {
             throw Abort(.notFound)
         }
     }
-    
-//    func createFromContent(req: Request) async throws -> Post.Output1 {
-//        let user = try req.auth.require(User.self)
-//        let content = try req.content.decode(String.self)
-//        let post = try Post(content: content, userID: user.requireID())
-//        try await post.save(on: req.db)
-//        return try post.public1()
-//    }
-//
-//    func createFromForm(req: Request) async throws -> Post.Output1 {
-//        let user = try req.auth.require(User.self)
-//        let form = try req.content.decode(Post.Form.self)
-//        let image = try form.image.map { file -> String in
-//            var buffer = file.data
-//            return try buffer.write(to: URL(fileURLWithPath: DirectoryConfiguration.detect().publicDirectory))
-//        }
-//        let post = try Post(content: form.content, image: image, userID: user.requireID())
-//        try await post.save(on: req.db)
-//        return try post.public1()
-//    }
     
 }
