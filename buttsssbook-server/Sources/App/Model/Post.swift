@@ -3,6 +3,8 @@ import Fluent
 
 final class Post: Model {
     
+    typealias Public = Output1
+    
     static let schema = "posts"
     
     @ID(key: .id)
@@ -39,7 +41,8 @@ final class Post: Model {
         self.$user.id = userID
     }
     
-    var `public`: Output1 {
+    var `public`: Public {
+//        Output2(id: id!, content: content, media: media, createdAt: createdAt, updatedAt: updatedAt, user: user.public)
         Output1(id: id!, content: content, media: media, createdAt: createdAt, updatedAt: updatedAt, userID: $user.id)
     }
     
@@ -66,9 +69,9 @@ extension Post {
     struct Output2: Content {
         var id: UUID
         var content: String
-        var image: String?
+        var media: String?
         var createdAt: Date?
-        var userID: UUID
+        var updatedAt: Date?
         var user: User.Output
     }
     

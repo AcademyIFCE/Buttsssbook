@@ -49,7 +49,7 @@ struct LikeController: RouteCollection {
         return likes.map(\.user.public)
     }
     
-    func likedPosts(req: Request) async throws -> [Post.Output1] {
+    func likedPosts(req: Request) async throws -> [Post.Public] {
         guard let userID = req.parameters.get("user_id", as: UUID.self) else {
             throw Abort(.badRequest)
         }

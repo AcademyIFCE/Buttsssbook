@@ -15,7 +15,7 @@ final class User: Model {
     var email: String
     
     @Field(key: "avatar")
-    var avatar: String
+    var avatar: String?
     
     @Field(key: "password")
     var password: String
@@ -25,7 +25,7 @@ final class User: Model {
     
     init() { }
     
-    init(id: UUID? = nil, name: String, email: String, avatar: String, password: String) {
+    init(id: UUID? = nil, name: String, email: String, avatar: String?, password: String) {
         self.id = id
         self.name = name
         self.email = email
@@ -42,23 +42,22 @@ extension User {
     struct Input: Content {
         var name: String
         var email: String
-        var avatar: String
         var password: String
     }
     
     struct Output: Content {
         var id: UUID?
         var name: String
-        var avatar: String
+        var avatar: String?
         var email: String
     }
     
     convenience init(_ input: Input) throws {
-        self.init(name: input.name, email: input.email, avatar: input.avatar, password: try Bcrypt.hash(input.password))
+        self.init(name: input.name, email: input.email, avatar: nil, password: try Bcrypt.hash(input.password))
     }
     
     var `public`: Output {
-        Output(id: self.id,name: self.name, avatar: self.avatar, email: self.email)
+        Output(id: self.id, name: self.name, avatar: self.avatar, email: self.email)
     }
     
 }

@@ -4,9 +4,11 @@ import Fluent
 struct PostController: RouteCollection {
     
     // (GET) posts/
-    // (POST) posts 🔒
+    // (POST) posts/ 🔒
+    // (GET) posts/:id
     // (PATCH) posts/:id 🔒
     // (DELETE) posts/:id 🔒
+    // (GET) posts/paginated
     
     func boot(routes: RoutesBuilder) throws {
         routes.group("posts") {
@@ -20,20 +22,18 @@ struct PostController: RouteCollection {
         }
     }
     
-    func index(req: Request) async throws -> [Post.Output1] {
+    func index(req: Request) async throws -> [Post.Public] {
+        let query: QueryBuilder<Post>
         if let userID = req.query[User.IDValue.self, at: "user_id"] {
-            let filteredPosts = try await Post.query(on: req.db).filter(\.$user.$id == userID).sort(\.$createdAt, .descending).all()
-            return filteredPosts.map(\.public)
+            query = Post.query(on: req.db).with(\.$user).sort(\.$createdAt, .descending).filter(\.$user.$id == userID)
         } else {
-            let allPosts = try await Post.query(on: req.db).sort(\.$createdAt, .descending).all()
-            return allPosts.map(\.public)
+            query = Post.query(on: req.db).with(\.$user).sort(\.$createdAt, .descending)
         }
+        return try await query.all().map(\.public)
     }
     
-    func show(req: Request) async throws -> Post.Output1 {
-        guard let id = req.parameters.get("id", as: Post.IDValue.self) else {
-            throw Abort(.badRequest)
-        }
+    func show(req: Request) async throws -> Post.Public {
+        let id = try req.parameters.require("id", as: Post.IDValue.self)
         if let post = try await Post.find(id, on: req.db) {
             return post.public
         } else {
@@ -41,7 +41,7 @@ struct PostController: RouteCollection {
         }
     }
     
-    func create(req: Request) async throws -> Post.Output1 {
+    func create(req: Request) async throws -> Post.Public {
         let user = try req.auth.require(User.self)
         switch req.headers.contentType {
             case .plainText?:
@@ -63,9 +63,7 @@ struct PostController: RouteCollection {
     }
     
     func update(req: Request) async throws -> Post {
-        guard let id = req.parameters.get("id", as: UUID.self) else {
-            throw Abort(.badRequest)
-        }
+        let id = try req.parameters.require("id", as: Post.IDValue.self)
         if let post = try await Post.find(id, on: req.db) {
             post.content = try req.content.decode(String.self)
             try await post.update(on: req.db)
@@ -76,15 +74,23 @@ struct PostController: RouteCollection {
     }
     
     func delete(req: Request) async throws -> Post {
-        guard let id = req.parameters.get("id", as: UUID.self) else {
-            throw Abort(.badRequest)
-        }
+        let id = try req.parameters.require("id", as: Post.IDValue.self)
         if let post = try await Post.find(id, on: req.db) {
             try await post.delete(on: req.db)
             return post
         } else {
             throw Abort(.notFound)
         }
+    }
+    
+    func indexPaginated(req: Request) async throws -> Page<Post.Public> {
+        let query: QueryBuilder<Post>
+        if let userID = req.query[User.IDValue.self, at: "user_id"] {
+            query = Post.query(on: req.db).with(\.$user).sort(\.$createdAt, .descending).filter(\.$user.$id == userID)
+        } else {
+            query = Post.query(on: req.db).with(\.$user).sort(\.$createdAt, .descending)
+        }
+        return try await query.paginate(for: req).map(\.public)
     }
     
 }
