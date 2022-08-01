@@ -5,6 +5,11 @@ import Foundation
 
 public func configure(_ app: Application) throws {
     
+
+    let factory = DatabaseConfigurationFactory.sqlite(.file("db.sqlite"))
+    let db = factory.make()
+    
+    
     app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
     
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))

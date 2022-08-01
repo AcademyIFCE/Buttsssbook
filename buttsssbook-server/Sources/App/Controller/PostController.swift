@@ -1,5 +1,6 @@
 import Vapor
 import Fluent
+import SQLiteKit
 
 struct PostController: RouteCollection {
     

@@ -13,8 +13,11 @@ final class Post: Model {
     @Field(key: "content")
     var content: String
     
-    @Field(key: "image")
+    @Field(key: "media")
     var media: String?
+    
+    @Field(key: "like_count")
+    var likeCount: Int
     
     @Parent(key: "user_id")
     var user: User
@@ -30,6 +33,7 @@ final class Post: Model {
     init(content: String, media: String? = nil, userID: User.IDValue) {
         self.content = content
         self.media = media
+        self.likeCount = 0
         self.$user.id = userID
     }
     
@@ -43,7 +47,7 @@ final class Post: Model {
     
     var `public`: Public {
 //        Output2(id: id!, content: content, media: media, createdAt: createdAt, updatedAt: updatedAt, user: user.public)
-        Output1(id: id!, content: content, media: media, createdAt: createdAt, updatedAt: updatedAt, userID: $user.id)
+        Output1(id: id!, content: content, media: media, likeCount: likeCount, createdAt: createdAt, updatedAt: updatedAt, userID: $user.id)
     }
     
 }
@@ -61,6 +65,7 @@ extension Post {
         var id: UUID
         var content: String
         var media: String?
+        var likeCount: Int
         var createdAt: Date?
         var updatedAt: Date?
         var userID: UUID

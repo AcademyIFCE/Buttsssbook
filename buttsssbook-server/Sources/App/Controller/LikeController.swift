@@ -3,6 +3,11 @@ import Fluent
 
 struct LikeController: RouteCollection {
 
+    // (GET) likes/liking_users/:post_id
+    // (GET) likes/liked_posts/:user_id
+    // (POST) likes/
+    // (DELETE) likes/:post_id
+    
     func boot(routes: RoutesBuilder) throws {
         routes.group("likes") {
             $0.get("liking_users", ":post_id", use: likingUsers)
@@ -24,6 +29,8 @@ struct LikeController: RouteCollection {
         } else {
             let like = try Like(userID: user.requireID(), postID: post.requireID())
             try await like.save(on: req.db)
+            post.likeCount += 1
+            try await post.save(on: req.db)
             let output = Like.Output(postID: postID, liked: true)
             return output
         }
@@ -33,10 +40,15 @@ struct LikeController: RouteCollection {
         guard let postID = req.parameters.get("post_id", as: UUID.self) else {
             throw Abort(.badRequest)
         }
+        guard let post = try await Post.find(postID, on: req.db) else {
+            throw Abort(.notFound)
+        }
         guard let like = try await Like.query(on: req.db).filter(\.$post.$id == postID).first() else {
             throw Abort(.notFound)
         }
         try await like.delete(on: req.db)
+        post.likeCount -= 1
+        try await post.save(on: req.db)
         let output = Like.Output(postID: postID, liked: false)
         return output
     }
