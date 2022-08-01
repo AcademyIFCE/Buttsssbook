@@ -51,4 +51,5 @@ extension Token: ModelTokenAuthenticatable {
         }
         return expiryDate > Date()
     }
+    
 }

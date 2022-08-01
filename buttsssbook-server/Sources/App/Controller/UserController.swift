@@ -57,7 +57,7 @@ struct UserController: RouteCollection {
     }
     
     func updateAvatar(req: Request) async throws -> User.Output {
-        guard req.headers.contentType == .png || req.headers.contentType == .jpeg else {
+        guard [.png, .jpeg].contains(req.headers.contentType) else {
             throw Abort(.unsupportedMediaType)
         }
         let user = try req.auth.require(User.self)

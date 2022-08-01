@@ -3,8 +3,6 @@ import Fluent
 
 final class Post: Model {
     
-    typealias Public = Output1
-    
     static let schema = "posts"
     
     @ID(key: .id)
@@ -46,8 +44,7 @@ final class Post: Model {
     }
     
     var `public`: Public {
-//        Output2(id: id!, content: content, media: media, createdAt: createdAt, updatedAt: updatedAt, user: user.public)
-        Output1(id: id!, content: content, media: media, likeCount: likeCount, createdAt: createdAt, updatedAt: updatedAt, userID: $user.id)
+        Public(id: id!, content: content, media: media, likeCount: likeCount, createdAt: createdAt, updatedAt: updatedAt, userID: $user.id)
     }
     
 }
@@ -61,7 +58,7 @@ extension Post {
         var media: File?
     }
     
-    struct Output1: Content {
+    struct Public: Content {
         var id: UUID
         var content: String
         var media: String?
@@ -70,14 +67,22 @@ extension Post {
         var updatedAt: Date?
         var userID: UUID
     }
+
+}
+
+extension ByteBuffer {
     
-    struct Output2: Content {
-        var id: UUID
-        var content: String
-        var media: String?
-        var createdAt: Date?
-        var updatedAt: Date?
-        var user: User.Output
+    func write(to directory: URL, contentType: HTTPMediaType?) throws -> String {
+        var buffer = self
+        guard let file = buffer.readData(length: buffer.readableBytes) else {
+            throw Abort(.internalServerError)
+        }
+        let filename = SHA256.hash(data: Data(UUID().uuidString.utf8)).hexEncodedString().prefix(30)
+        let fileExtension = contentType?.description.components(separatedBy: "/").last ?? ""
+        let path = "media/" + filename + "." + fileExtension
+        let url = directory.appendingPathComponent(path)
+        try file.write(to: url)
+        return path
     }
     
 }

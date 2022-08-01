@@ -52,7 +52,7 @@ struct PostController: RouteCollection {
                 return post.public
             case .multipart?:
                 let form = try req.content.decode(Post.Form.self)
-                guard let contentType = form.media?.contentType, contentType == [.png, .jpeg, .mpeg] else {
+            guard let contentType = form.media?.contentType, [.png, .jpeg, .mpeg].contains(contentType) else {
                     throw Abort(.unsupportedMediaType)
                 }
                 let post = try Post(form: form, userID: user.requireID())
