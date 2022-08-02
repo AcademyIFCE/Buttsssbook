@@ -27,12 +27,12 @@ struct UserController: RouteCollection {
         }
     }
     
-    func index(req: Request) async throws -> [User.Output] {
+    func index(req: Request) async throws -> [User.Public] {
         let users = try await User.query(on: req.db).all()
         return users.map(\.public)
     }
     
-    func show(req: Request) async throws -> User.Output {
+    func show(req: Request) async throws -> User.Public {
         let id = try req.parameters.require("id", as: User.IDValue.self)
         if let user = try await User.find(id, on: req.db) {
             return user.public
@@ -51,12 +51,12 @@ struct UserController: RouteCollection {
         return session
     }
     
-    func current(req: Request) throws -> User.Output {
+    func current(req: Request) throws -> User.Public {
         let user = try req.auth.require(User.self)
         return user.public
     }
     
-    func updateAvatar(req: Request) async throws -> User.Output {
+    func updateAvatar(req: Request) async throws -> User.Public {
         guard [.png, .jpeg].contains(req.headers.contentType) else {
             throw Abort(.unsupportedMediaType)
         }
@@ -70,7 +70,7 @@ struct UserController: RouteCollection {
         return user.public
     }
     
-    func deleteAvatar(req: Request) async throws -> User.Output {
+    func deleteAvatar(req: Request) async throws -> User.Public {
         let user = try req.auth.require(User.self)
         user.avatar = nil
         try await user.save(on: req.db)

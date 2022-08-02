@@ -44,7 +44,7 @@ extension User {
         var password: String
     }
     
-    struct Output: Content {
+    struct Public: Content {
         var id: UUID?
         var name: String
         var avatar: String?
@@ -55,8 +55,8 @@ extension User {
         self.init(name: input.name, email: input.email, avatar: nil, password: try Bcrypt.hash(input.password))
     }
     
-    var `public`: Output {
-        Output(id: self.id, name: self.name, avatar: self.avatar, email: self.email)
+    var `public`: Public {
+        Public(id: self.id, name: self.name, avatar: self.avatar, email: self.email)
     }
     
 }

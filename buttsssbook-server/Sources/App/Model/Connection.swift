@@ -3,10 +3,10 @@ import Vapor
 final class Connection: Hashable {
     
     let id: UUID
-    let user: User.Output
+    let user: User.Public
     let socket: WebSocket
     
-    init(id: UUID = .init(), user: User.Output, socket: WebSocket) {
+    init(id: UUID = .init(), user: User.Public, socket: WebSocket) {
         self.id = id
         self.user = user
         self.socket = socket

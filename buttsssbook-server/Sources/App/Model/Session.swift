@@ -2,5 +2,5 @@ import Vapor
 
 struct Session: Content {
     let token: String
-    let user: User.Output
+    let user: User.Public
 }
