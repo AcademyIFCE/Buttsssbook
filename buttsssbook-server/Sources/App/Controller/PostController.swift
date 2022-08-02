@@ -20,6 +20,7 @@ struct PostController: RouteCollection {
                 $0.patch(":id", use: update)
                 $0.delete(":id", use: delete)
             }
+            $0.get("paginated", use: indexPaginated)
         }
     }
     
