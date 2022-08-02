@@ -40,6 +40,7 @@ final class Post: Model {
         if let media = form.media {
             self.media = try? media.data.write(to: URL(fileURLWithPath: DirectoryConfiguration.detect().publicDirectory), contentType: media.contentType)
         }
+        self.likeCount = 0
         self.$user.id = userID
     }
     

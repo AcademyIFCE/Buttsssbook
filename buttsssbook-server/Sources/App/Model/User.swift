@@ -25,8 +25,7 @@ final class User: Model {
     
     init() { }
     
-    init(id: UUID? = nil, name: String, email: String, avatar: String?, password: String) {
-        self.id = id
+    init(name: String, email: String, avatar: String?, password: String) {
         self.name = name
         self.email = email
         self.avatar = avatar
@@ -67,7 +66,7 @@ extension User {
     func token(source: SessionSource) throws -> Token {
         let token = [UInt8].random(count: 16).base64
         let calendar = Calendar(identifier: .gregorian)
-        let expiryDate = calendar.date(byAdding: .year, value: 1, to: Date())
+        let expiryDate = calendar.date(byAdding: .hour, value: 8, to: Date())
         return try Token(userId: requireID(), token: token, source: source, expiresAt: expiryDate)
     }
     

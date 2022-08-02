@@ -50,7 +50,7 @@ struct PostController: RouteCollection {
                 let post = try Post(content: content, userID: user.requireID())
                 try await post.save(on: req.db)
                 return post.public
-            case .multipart?:
+            case .formData?:
                 let form = try req.content.decode(Post.Form.self)
             guard let contentType = form.media?.contentType, [.png, .jpeg, .mpeg].contains(contentType) else {
                     throw Abort(.unsupportedMediaType)

@@ -30,8 +30,7 @@ final class Token: Model {
     
     init() {}
     
-    init(id: UUID? = nil, userId: User.IDValue, token: String, source: SessionSource, expiresAt: Date?) {
-        self.id = id
+    init(userId: User.IDValue, token: String, source: SessionSource, expiresAt: Date?) {
         self.$user.id = userId
         self.value = token
         self.source = source
