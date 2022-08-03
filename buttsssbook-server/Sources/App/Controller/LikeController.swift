@@ -17,26 +17,24 @@ struct LikeController: RouteCollection {
         }
     }
     
-    func like(req: Request) async throws -> Like.Output {
+    func like(req: Request) async throws -> Response {
         let user = try req.auth.require(User.self)
         let postID = try req.content.decode(UUID.self)
         guard let post = try await Post.find(postID, on: req.db) else {
             throw Abort(.notFound)
         }
         if let _ = try await Like.query(on: req.db).filter(\.$post.$id == postID).first() {
-            let output = Like.Output(postID: postID, liked: true)
-            return output
+            return Response(status: .noContent)
         } else {
             let like = try Like(userID: user.requireID(), postID: post.requireID())
             try await like.save(on: req.db)
             post.likeCount += 1
             try await post.save(on: req.db)
-            let output = Like.Output(postID: postID, liked: true)
-            return output
+            return Response(status: .noContent)
         }
     }
     
-    func unlike(req: Request) async throws -> Like.Output {
+    func unlike(req: Request) async throws -> Response {
         guard let postID = req.parameters.get("post_id", as: UUID.self) else {
             throw Abort(.badRequest)
         }
@@ -49,8 +47,7 @@ struct LikeController: RouteCollection {
         try await like.delete(on: req.db)
         post.likeCount -= 1
         try await post.save(on: req.db)
-        let output = Like.Output(postID: postID, liked: false)
-        return output
+        return Response(status: .noContent)
     }
     
     func likingUsers(req: Request) async throws -> [User.Public] {

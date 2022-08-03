@@ -40,9 +40,4 @@ extension Like {
 
     }
     
-    struct Output: Content {
-        let postID: Post.IDValue
-        let liked: Bool
-    }
-    
 }
